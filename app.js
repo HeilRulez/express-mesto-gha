@@ -10,15 +10,15 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: false
 });
 
-app.use(express.json());
-app.use(routesUser);
-app.use(routesCards);
-
 app.use((req, res, next) => {
   req.user = {
-    _id: '630e7ca68487dfc135ca91a6'
+    _id: '63118c6481ba22e901e5e83f'
   };
   next();
 });
+
+app.use(express.json());
+app.use(routesUser);
+app.use(routesCards);
 
 app.listen(PORT, () =>{console.log('Server started')})

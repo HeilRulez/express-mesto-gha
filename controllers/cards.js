@@ -1,32 +1,61 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
-  Card.find({})
-  .then(cards => res.send({data: cards}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при получении карточек.'}));
+const DEFAULT_ERROR = 500;
+const NOT_FOUND_ERROR = 404;
+const BAD_REQUEST_ERROR = 400;
+const OK = 200;
+const OK_ADD = 201;
+
+module.exports.getCards = async (req, res) => {
+  try {
+    const cards = await Card.find({});
+    res.status(OK).send(cards);
+  } catch {
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = async (req, res) => {
   const { name, link } = req.body;
-  Card.create({name, link})
-  .then(card => res.send({data: card}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при создании карточки.'}));
+  try {
+    const card = await Card.create({name, link, owner: req.user._id}, {new: true, runValidators: true});
+    res.status(OK_ADD).send(card);
+  } catch(err) {
+    if (err.name === 'ValidationError') {
+      return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
+    }
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
 
-module.exports.delTargetCard = (req, res) => {
-  Card.findById(req.params.cardId)
-  .then(card => res.send({data: card}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при удалении карточки.'}));
+module.exports.delTargetCard = async (req, res) => {
+  try {
+    const card = await Card.findById(req.params.cardId);
+    if (!card) {
+      res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.'});
+      return;
+    }
+    await card.delete();
+    res.status(OK).send({ message: 'Какточка удалена.'});
+  } catch {
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
 
-module.exports.likeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-  .then(card => res.send({data: card}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при постановке лайка.'}));
+module.exports.likeCard = async (req, res) => {
+  try {
+    await Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true });
+    res.status(OK).send({ message: 'Нравится.'});
+  } catch {
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
 
-module.exports.dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-  .then(card => res.send({data: card}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при удалении лайка.'}));
+module.exports.dislikeCard = async (req, res) => {
+  try {
+    await Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    res.status(OK).send({ message: 'Не нравится.'});
+  } catch {
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };

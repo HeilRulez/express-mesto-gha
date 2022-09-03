@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectID = mongoose.Schema.Types.ObjectId;
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -12,19 +13,17 @@ const cardSchema = new mongoose.Schema({
     required: true
   },
   owner: {
-    type: ObjectId,
+    type: ObjectID,
     required: true
   },
   likes: {
-    enum: [{
-            type: ObjectId,
-            required: true
-          }, []]
+    type: [{ type: ObjectID, ref: 'user' }],
+    default: []
   },
   createdAt: {
     type: Date,
     required: true,
-    default: Date.now
+    default: Date.now()
   }
 });
 

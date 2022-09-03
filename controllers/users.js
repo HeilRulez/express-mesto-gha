@@ -1,34 +1,69 @@
 const User = require('../models/user');
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-  .then(users => res.send({data: users}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при получении списка пользователей.'}));
+const DEFAULT_ERROR = 500;
+const NOT_FOUND_ERROR = 404;
+const BAD_REQUEST_ERROR = 400;
+const OK = 200;
+const OK_ADD = 201;
+
+module.exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.status(OK).send(users);
+  } catch {
+    res.status(DEFAULT_ERROR).send({ message: `На сервере произошла ошибка.`})
+  };
 };
 
-module.exports.getTargetUser = (req, res) => {
-  User.findById(req.params.userId)
-  .then(user => res.send({data: user}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при получении пользователя.'}));
+module.exports.getTargetUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      res.status(NOT_FOUND_ERROR).send({ message: `Пользователь не найден.`});
+      return;
+    }
+    res.status(OK).send(user);
+  } catch(err) {
+    if (err.kind === 'ObjectId') {
+      return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
+    }
+    res.status(DEFAULT_ERROR).send({ message: `На сервере произошла ошибка.`})
+  };
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({name, about, avatar})
-  .then(user => res.send({data: user}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при создании пользователя.'}));
+module.exports.createUser = async (req, res) => {
+  try {
+    const user = await User.create(req.body, {new: true, runValidators: true});
+    res.status(OK_ADD).send(user);
+    return;
+  } catch(err) {
+    if (err.name === 'ValidationError') {
+      return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
+    }
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
 
-module.exports.updataProfile = (req, res) => {
-  const { name, about } = req.body;
-  User.patch({name, about})
-  .then(user => res.send({data: user}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при обновлении данных пользователя.'}));
+module.exports.updateProfile = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, {new: true, runValidators: true});
+    res.status(OK).send(user);
+  } catch(err) {
+    if (err.name === 'ValidationError') {
+      return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
+    }
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
 
-module.exports.updataAvatar = (req, res) => {
-  const { link } = req.body;
-  User.patch({avatar: link})
-  // .then(user => res.send({data: user}))
-  .catch(() => res.status(500).send({ message: 'Ошибка при добавлении аватара.'}));
+module.exports.updateAvatar = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, {new: true, runValidators: true});
+    res.status(OK).send(user);
+  } catch(err) {
+    if (err.name === 'ValidationError') {
+      return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
+    }
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+  };
 };
