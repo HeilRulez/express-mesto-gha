@@ -22,7 +22,7 @@ module.exports.getTargetUser = async (req, res) => {
       res.status(NOT_FOUND_ERROR).send({ message: `Пользователь не найден.`});
       return;
     }
-    res.status(OK).send({user});
+    res.status(OK).send(user);
   } catch(err) {
     if (err.kind === 'ObjectId') {
       return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
@@ -33,8 +33,8 @@ module.exports.getTargetUser = async (req, res) => {
 
 module.exports.createUser = async (req, res) => {
   try {
-    const user = await User.create(req.body, {new: true, runValidators: true});
-    return res.status(OK_ADD).send(user);
+    const user = await User.create(req.body);
+    res.status(OK_ADD).send(user);
   } catch(err) {
     if (err.name === 'ValidationError') {
       return res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});

@@ -18,7 +18,7 @@ module.exports.getCards = async (req, res) => {
 module.exports.createCard = async (req, res) => {
   const { name, link } = req.body;
   try {
-    const card = await Card.create({name, link, owner: req.user._id}, {new: true, runValidators: true});
+    const card = await Card.create({name, link, owner: req.user._id});
     res.status(OK_ADD).send(card);
   } catch(err) {
     if (err.name === 'ValidationError') {
@@ -44,8 +44,8 @@ module.exports.delTargetCard = async (req, res) => {
 
 module.exports.likeCard = async (req, res) => {
   try {
-    await Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true });
-    res.status(OK).send({ message: 'Нравится.'});
+    const card = await Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true });
+    res.status(OK).send(card);
   } catch {
     res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
   };
