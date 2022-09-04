@@ -37,8 +37,7 @@ module.exports.delTargetCard = async (req, res) => {
     if (err.name === 'TypeError') {
       res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.'});
       return;
-    }
-    if(err.name === 'CastError') {
+    }else if(err.name === 'CastError') {
       res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'});
       return;
     }
@@ -49,12 +48,12 @@ module.exports.delTargetCard = async (req, res) => {
 module.exports.likeCard = async (req, res) => {
   try {
     const card = await Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true });
-    res.status(OK).send(card);
-  } catch(err) {
-    if (err.name === 'TypeError') {
+    if (!card) {
       res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.'});
       return;
     }
+    res.status(OK).send(card);
+  } catch(err) {
     if(err.name === 'CastError') {
       res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'});
       return;
@@ -65,14 +64,17 @@ module.exports.likeCard = async (req, res) => {
 
 module.exports.dislikeCard = async (req, res) => {
   try {
-    const card = await Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    const card = await Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true });
+    if (!card) {
+      res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.'});
+      return;
+    }
     res.status(OK).send(card);
   } catch(err) {
     if (err.name === 'TypeError') {
       res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.'});
       return;
-    }
-    if(err.name === 'CastError') {
+    }else if(err.name === 'CastError') {
       res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'});
       return;
     }
