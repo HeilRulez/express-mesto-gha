@@ -6,7 +6,7 @@ const BAD_REQUEST_ERROR = 400;
 const OK = 200;
 const OK_ADD = 201;
 
-const processingError = (err) {
+const processingError = (err) => {
   switch(err.name) {
     case 'ValidationError': res.status(BAD_REQUEST_ERROR).send({ message: `Неверные данные запроса.`});
     break;
