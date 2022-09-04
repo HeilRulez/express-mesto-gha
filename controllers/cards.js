@@ -47,15 +47,15 @@ module.exports.likeCard = async (req, res) => {
     const card = await Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true });
     res.status(OK).send(card);
   } catch {
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+    res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'})
   };
 };
 
 module.exports.dislikeCard = async (req, res) => {
   try {
-    await Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    res.status(OK).send({ message: 'Не нравится.'});
+    const card = await Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    res.status(OK).send(card);
   } catch {
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
+    res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'})
   };
 };
