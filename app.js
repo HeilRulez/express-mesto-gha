@@ -18,6 +18,10 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+app.use('/', (req, res, next) => {
+  res.status(404).send({ message: 'Страница не найдена.'})
+});
 app.use(routesUser);
 app.use(routesCards);
 
