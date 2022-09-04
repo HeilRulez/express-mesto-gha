@@ -31,13 +31,17 @@ module.exports.createCard = async (req, res) => {
 module.exports.delTargetCard = async (req, res) => {
   try {
     const card = await Card.findById(req.params.cardId);
-    if (!card) {
+    await card.delete();
+    res.status(OK).send(card);
+  } catch(err) {
+    if (err.name === 'TypeError') {
       res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.'});
       return;
     }
-    await card.delete();
-    res.status(OK).send({ message: 'Какточка удалена.'});
-  } catch {
+    if(err.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'});
+      return;
+    }
     res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
   };
 };
@@ -46,8 +50,12 @@ module.exports.likeCard = async (req, res) => {
   try {
     const card = await Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true });
     res.status(OK).send(card);
-  } catch {
-    res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'})
+  } catch(err) {
+    if(err.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'});
+      return;
+    }
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
   };
 };
 
@@ -55,7 +63,11 @@ module.exports.dislikeCard = async (req, res) => {
   try {
     const card = await Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     res.status(OK).send(card);
-  } catch {
-    res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'})
+  } catch(err) {
+    if(err.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.'});
+      return;
+    }
+    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.'})
   };
 };
