@@ -18,11 +18,11 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use('/', (req, res, next) => {
-  res.status(404).send({ message: 'Страница не найдена.'});
-  next();
-});
 app.use('/users', routesUser);
 app.use('/cards', routesCards);
+
+app.get('/', (req, res) => {
+  res.status(404).send({ message: 'Страница не найдена.'});
+});
 
 app.listen(PORT, () =>{console.log('Server started')})
