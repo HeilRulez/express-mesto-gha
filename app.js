@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(routesUser);
 app.use(routesCards);
 
-app.get('*', (req, res) => {
+app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страница не найдена.'});
 });
 
