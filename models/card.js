@@ -5,18 +5,18 @@ const ObjectID = mongoose.Schema.Types.ObjectId;
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 30,
+    required: [true, 'Не должно быть пустым'],
+    minlength: [2, 'Должно быть не менее {VALUE}'],
+    maxlength: [30, 'Должно быть неболее {VALUE}'],
   },
   link: {
     type: String,
-    required: true,
+    required: [true, 'Не должно быть пустым'],
   },
   owner: {
     type: ObjectID,
     ref: 'user',
-    required: true,
+    required: [true, 'Не должно быть пустым'],
   },
   likes: {
     type: [{ type: ObjectID, ref: 'user' }],

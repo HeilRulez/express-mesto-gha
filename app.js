@@ -10,7 +10,7 @@ const app = express();
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
-  useUnifiedTopology: false.valueOf,
+  useUnifiedTopology: false,
 });
 
 app.use((req, res, next) => {
