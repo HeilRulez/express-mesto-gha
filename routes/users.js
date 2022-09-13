@@ -1,11 +1,11 @@
 const routes = require('express').Router();
 const {
-  getUsers, getTargetUser, createUser, updateProfile, updateAvatar,
+  getUsers, getUser, getTargetUser, updateProfile, updateAvatar,
 } = require('../controllers/users');
 
 routes.get('/', getUsers);
+routes.get('/me', getUser);
 routes.get('/:userId', getTargetUser);
-routes.post('/', createUser);
 routes.patch('/me', updateProfile);
 routes.patch('/me/avatar', updateAvatar);
 

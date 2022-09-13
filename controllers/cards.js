@@ -1,6 +1,6 @@
 const Card = require('../models/card');
 const {
-  OK, OK_ADD, BAD_REQUEST_ERROR, NOT_FOUND_ERROR, DEFAULT_ERROR,
+  OK, OK_ADD, BAD_REQUEST_ERROR, NOT_FOUND_ERROR, DEFAULT_ERROR, FORBIDDEN_ERROR,
 } = require('../constants/constants');
 
 module.exports.getCards = async (req, res) => {
@@ -31,6 +31,10 @@ module.exports.delTargetCard = async (req, res) => {
     const card = await Card.findByIdAndDelete(req.params.cardId);
     if (!card) {
       res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.' });
+      return;
+    }
+    if (!req.owner === req.user) {
+      res.status(FORBIDDEN_ERROR).send({ message: 'Нет прав.' });
       return;
     }
     res.status(OK).send(card);
