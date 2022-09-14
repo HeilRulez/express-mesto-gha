@@ -46,7 +46,7 @@ module.exports.createUser = async (req, res) => {
     const {
       name, about, avatar, email, password,
     } = req.body;
-    const pasHash = bcrypt.hash(password, 10);
+    const pasHash = bcrypt.hashSync(password, 10);
     const user = await User.create({
       name, about, avatar, email, password: pasHash,
     });
@@ -98,7 +98,7 @@ module.exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email }).select('+password');
-    if (!user || !bcrypt.compare(password, user.password)) {
+    if (!user || !bcrypt.compareSync(password, user.password)) {
       res.status(UNAUTHORIZED_ERROR).send({ message: 'Неправильные почта или пароль.' });
       return;
     }
