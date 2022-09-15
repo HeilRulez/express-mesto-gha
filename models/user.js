@@ -24,10 +24,16 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Не должно быть пустым'],
     select: false,
+    required: [true, 'Не должно быть пустым'],
     minlength: [8, 'Должно быть не менее {VALUE}'],
   },
 });
+
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
 
 module.exports = mongoose.model('user', userSchema);
