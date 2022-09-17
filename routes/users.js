@@ -19,7 +19,10 @@ routes.patch('/me', celebrate({
 }), updateProfile);
 routes.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().dataUri(),
+    avatar: Joi
+      .string()
+      .regex(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/)
+      .dataUri(),
   }),
 }), updateAvatar);
 
