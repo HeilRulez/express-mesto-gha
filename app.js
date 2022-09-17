@@ -45,9 +45,9 @@ app.use('*', (req, res, next) => {
 app.use(errors());
 
 app.use((err, req, res) => {
-  // if (!err.statusCode) {
-  //   res.status(500).send({ message: 'На сервере произошла ошибка' });
-  // }
+  if (!err.statusCode) {
+    res.status(500).send({ message: 'На сервере произошла ошибка' });
+  }
   res.status(err.statusCode).send({ message: err.message });
 });
 
