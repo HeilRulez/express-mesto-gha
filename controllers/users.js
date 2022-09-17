@@ -111,7 +111,9 @@ module.exports.login = async (req, res, next) => {
   } else {
     try {
       const user = await User.findOne({ email }).select('+password');
-      if (!user && await !bcrypt.compare(password, user.password)) {
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль.');
+      } else if (!bcrypt.compare(password, user.password)) {
         throw new UnauthorizedError('Неправильные почта или пароль.');
       } else {
         const token = await jwt.sign(
