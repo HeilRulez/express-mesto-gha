@@ -1,10 +1,12 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const ConflictError = require('../errors/ConflictError');
 const User = require('../models/user');
-const {
-  OK, OK_ADD, BAD_REQUEST_ERROR, UNAUTHORIZED_ERROR, NOT_FOUND_ERROR, DEFAULT_ERROR,
-} = require('../constants/constants');
+const { OK, OK_ADD } = require('../constants/constants');
 
 module.exports.getUsers = async (req, res, next) => {
   try {
@@ -12,7 +14,6 @@ module.exports.getUsers = async (req, res, next) => {
     res.status(OK).send(users);
   } catch (err) {
     next(err);
-    // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
   }
 };
 
@@ -22,7 +23,6 @@ module.exports.getUser = async (req, res, next) => {
     res.status(OK).send(user);
   } catch (err) {
     next(err);
-    // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
   }
 };
 
@@ -30,17 +30,16 @@ module.exports.getTargetUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) {
-      res.status(NOT_FOUND_ERROR).send({ message: 'Пользователь не найден.' });
+      throw new NotFoundError('Пользователь не найден.');
     } else {
       res.status(OK).send(user);
     }
   } catch (err) {
+    if (err.kind === 'ObjectId') {
+      next(new BadRequestError('Неверные данные запроса.'));
+      return;
+    }
     next(err);
-    // if (err.kind === 'ObjectId') {
-    //   res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
-    //   return;
-    // }
-    // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
   }
 };
 
@@ -50,7 +49,7 @@ module.exports.createUser = async (req, res, next) => {
       name, about, avatar, email, password,
     } = req.body;
     if (!validator.isEmail(email)) {
-      res.status(BAD_REQUEST_ERROR).send({ message: 'Некорректный Email.' });
+      throw new BadRequestError('Некорректный Email.');
     } else {
       const pasHash = await bcrypt.hash(password, 10);
       const user = await User.create({
@@ -59,12 +58,15 @@ module.exports.createUser = async (req, res, next) => {
       res.status(OK_ADD).send(user.toJSON());
     }
   } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError('Неверные данные запроса.'));
+      return;
+    }
+    if (err.code === 11000) {
+      next(new ConflictError('Такой пользователь уже зарегистрирован.'));
+      return;
+    }
     next(err);
-    // if (err.name === 'ValidationError') {
-    //   res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
-    //   return;
-    // }
-    // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
   }
 };
 
@@ -77,12 +79,11 @@ module.exports.updateProfile = async (req, res, next) => {
     );
     res.status(OK).send(user);
   } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError('Неверные данные запроса.'));
+      return;
+    }
     next(err);
-    // if (err.name === 'ValidationError') {
-    //   res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
-    //   return;
-    // }
-    // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
   }
 };
 
@@ -95,24 +96,23 @@ module.exports.updateAvatar = async (req, res, next) => {
     );
     res.status(OK).send(user);
   } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError('Неверные данные запроса.'));
+      return;
+    }
     next(err);
-    // if (err.name === 'ValidationError') {
-    //   res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
-    //   return;
-    // }
-    // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
   }
 };
 
 module.exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   if (!validator.isEmail(email)) {
-    res.status(BAD_REQUEST_ERROR).send({ message: 'Некорректный Email.' });
+    throw new BadRequestError('Некорректный Email.');
   } else {
     try {
       const user = await User.findOne({ email }).select('+password');
       if (!user && await !bcrypt.compare(password, user.password)) {
-        res.status(UNAUTHORIZED_ERROR).send({ message: 'Неправильные почта или пароль.' });
+        throw new UnauthorizedError('Неправильные почта или пароль.');
       } else {
         const token = await jwt.sign(
           { _id: user._id },
@@ -126,7 +126,6 @@ module.exports.login = async (req, res, next) => {
       }
     } catch (err) {
       next(err);
-      // res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
     }
   }
 };

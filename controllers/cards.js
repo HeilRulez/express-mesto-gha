@@ -1,53 +1,52 @@
+const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 const Card = require('../models/card');
-const {
-  OK, OK_ADD, BAD_REQUEST_ERROR, NOT_FOUND_ERROR, DEFAULT_ERROR, FORBIDDEN_ERROR,
-} = require('../constants/constants');
+const { OK, OK_ADD } = require('../constants/constants');
 
-module.exports.getCards = async (req, res) => {
+module.exports.getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     res.status(OK).send(cards);
   } catch (err) {
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
+    next(err);
   }
 };
 
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   const { name, link } = req.body;
   try {
     const card = await Card.create({ name, link, owner: req.user._id });
     res.status(OK_ADD).send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
+      next(new BadRequestError('Неверные данные запроса.'));
       return;
     }
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
+    next(err);
   }
 };
 
-module.exports.delTargetCard = async (req, res) => {
+module.exports.delTargetCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.cardId);
     if (!card) {
-      res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.' });
-      return;
+      throw new NotFoundError('Какточка отсутствут.');
     }
     if (!req.owner === req.user._id) {
-      res.status(FORBIDDEN_ERROR).send({ message: 'Нет прав.' });
-      return;
+      throw new ForbiddenError('Нет прав.');
     }
     res.status(OK).send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
+      next(new BadRequestError('Неверные данные запроса.'));
       return;
     }
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
+    next(err);
   }
 };
 
-module.exports.likeCard = async (req, res) => {
+module.exports.likeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -55,20 +54,19 @@ module.exports.likeCard = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.' });
-      return;
+      throw new NotFoundError('Какточка отсутствут.');
     }
     res.status(OK).send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
+      next(new BadRequestError('Неверные данные запроса.'));
       return;
     }
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
+    next(err);
   }
 };
 
-module.exports.dislikeCard = async (req, res) => {
+module.exports.dislikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -76,15 +74,14 @@ module.exports.dislikeCard = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res.status(NOT_FOUND_ERROR).send({ message: 'Какточка отсутствут.' });
-      return;
+      throw new NotFoundError('Какточка отсутствут.');
     }
     res.status(OK).send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({ message: 'Неверные данные запроса.' });
+      next(new BadRequestError('Неверные данные запроса.'));
       return;
     }
-    res.status(DEFAULT_ERROR).send({ message: 'На сервере произошла ошибка.' });
+    next(err);
   }
 };

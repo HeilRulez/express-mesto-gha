@@ -1,9 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const routesUser = require('./routes/users');
 const routesCards = require('./routes/cards');
 const auth = require('./middlewares/auth');
-const { NOT_FOUND_ERROR, UNAUTHORIZED_ERROR } = require('./constants/constants');
+const NotFoundError = require('./errors/NotFoundError');
 const {
   login, createUser,
 } = require('./controllers/users');
@@ -17,18 +19,36 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: false,
 });
 app.use(express.json());
-app.post('/signup', createUser);
-app.post('/signin', login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().dataUri(),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(4),
+  }),
+}), createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(4),
+  }),
+}), login);
 app.use(auth);
 app.use('/users', routesUser);
 app.use('/cards', routesCards);
 
-app.use('*', (req, res) => {
-  res.status(NOT_FOUND_ERROR).send({ message: 'Страница не найдена.' });
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Страница не найдена.'));
 });
 
-app.use((err, req, res, next) => {
-  res.status(UNAUTHORIZED_ERROR).send({ message: 'Не авторизовано.' });
+app.use(errors());
+
+app.use((err, req, res) => {
+  if (!err.statusCode) {
+    res.status(500).send({ message: 'На сервере произошла ошибка' });
+  }
+  res.status(err.statusCode).send({ message: err.message });
 });
 
 app.listen(PORT);
