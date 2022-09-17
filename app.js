@@ -21,11 +21,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(express.json());
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().dataUri(),
+    name: Joi.string().default('Жак-Ив Кусто').min(2).max(30),
+    about: Joi.string().default('Исследователь').min(2).max(30),
+    avatar: Joi
+      .string()
+      .regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/)
+      .default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(4),
+    password: Joi.string().required(),
   }),
 }), createUser);
 app.post('/signin', celebrate({
