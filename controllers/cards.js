@@ -33,7 +33,7 @@ module.exports.delTargetCard = async (req, res, next) => {
     if (!card) {
       throw new NotFoundError('Какточка отсутствут.');
     }
-    if (!req.owner === req.user._id) {
+    if (!card.owner.toString() === req.user._id) {
       throw new ForbiddenError('Нет прав.');
     }
     res.status(OK).send(card);
