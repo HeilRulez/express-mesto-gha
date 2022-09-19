@@ -1,5 +1,6 @@
 const routes = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const { regExp } = require('../constants/constants');
 const {
   getUsers, getUser, getTargetUser, updateProfile, updateAvatar,
 } = require('../controllers/users');
@@ -8,7 +9,7 @@ routes.get('/', getUsers);
 routes.get('/me', getUser);
 routes.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24),
+    userId: Joi.string().alphanum().hex().length(24),
   }),
 }), getTargetUser);
 routes.patch('/me', celebrate({
@@ -21,7 +22,7 @@ routes.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi
       .string()
-      .regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/),
+      .regex(regExp),
   }),
 }), updateAvatar);
 

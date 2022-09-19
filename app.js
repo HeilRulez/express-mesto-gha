@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { celebrate, Joi } = require('celebrate');
-const { errors } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const routesUser = require('./routes/users');
 const routesCards = require('./routes/cards');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
+const { regExp } = require('./constants/constants');
 const {
   login, createUser,
 } = require('./controllers/users');
@@ -25,7 +25,7 @@ app.post('/signup', celebrate({
     about: Joi.string().default('Исследователь').min(2).max(30),
     avatar: Joi
       .string()
-      .regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/)
+      .regex(regExp)
       .default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
@@ -34,7 +34,7 @@ app.post('/signup', celebrate({
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(4),
+    password: Joi.string().required(),
   }),
 }), login);
 app.use(auth);

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { regExp } = require('../constants/constants');
 
 const ObjectID = mongoose.Schema.Types.ObjectId;
 
@@ -12,6 +13,11 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: [true, 'Не должно быть пустым'],
+    validate: {
+      validator(v) {
+        return regExp.test(v);
+      },
+    },
   },
   owner: {
     type: ObjectID,
