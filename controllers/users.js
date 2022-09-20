@@ -48,15 +48,11 @@ module.exports.createUser = async (req, res, next) => {
     const {
       name, about, avatar, email, password,
     } = req.body;
-    if (!validator.isEmail(email)) {
-      throw new BadRequestError('Некорректный Email.');
-    } else {
-      const pasHash = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name, about, avatar, email, password: pasHash,
-      });
-      res.status(OK_ADD).send(user.toJSON());
-    }
+    const pasHash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name, about, avatar, email, password: pasHash,
+    });
+    res.status(OK_ADD).send(user.toJSON());
   } catch (err) {
     if (err.name === 'ValidationError') {
       next(new BadRequestError('Неверные данные запроса.'));
