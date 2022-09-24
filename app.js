@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { celebrate, Joi, errors } = require('celebrate');
+const { reqLogger, errLogger } = require('./middlewares/logger');
 const routesUser = require('./routes/users');
 const routesCards = require('./routes/cards');
 const auth = require('./middlewares/auth');
@@ -19,6 +20,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: false,
 });
 app.use(express.json());
+app.use(reqLogger);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().default('Жак-Ив Кусто').min(2).max(30),
@@ -44,7 +46,7 @@ app.use('/cards', routesCards);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Страница не найдена.'));
 });
-
+app.use(errLogger);
 app.use(errors());
 
 app.use((err, req, res, next) => {
