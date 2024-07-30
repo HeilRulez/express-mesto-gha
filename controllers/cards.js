@@ -31,7 +31,7 @@ module.exports.delTargetCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.cardId);
     if (!card) {
-      throw new NotFoundError('Какточка отсутствут.');
+      throw new NotFoundError('Карточка отсутствует.');
     }
     if (card.owner.toString() !== req.user._id) {
       throw new ForbiddenError('Нет прав.');
@@ -54,7 +54,7 @@ module.exports.likeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      throw new NotFoundError('Какточка отсутствут.');
+      throw new NotFoundError('Карточка отсутствует.');
     }
     res.status(OK).send(card);
   } catch (err) {
@@ -74,7 +74,7 @@ module.exports.dislikeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      throw new NotFoundError('Какточка отсутствут.');
+      throw new NotFoundError('Карточка отсутствует.');
     }
     res.status(OK).send(card);
   } catch (err) {
